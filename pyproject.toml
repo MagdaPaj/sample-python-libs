@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "custom_exceptions_lib"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     {name = "Magda Baran"},
 ]
-description = "A package containing custom exceptions to be reused across Spark notebooks"
+description = "A sample package containing custom exceptions"
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
