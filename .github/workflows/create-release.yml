@@ -32,6 +32,6 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
-        files: dist/custom_exceptions_lib-$VERSION-py3-none-any.whl
+        files: dist/custom_exceptions_lib-${{ env.VERSION }}-py3-none-any.whl
         token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         make_latest: true
