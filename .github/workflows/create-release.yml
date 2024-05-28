@@ -31,3 +31,4 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: dist/custom_exceptions_lib-0.0.3-py3-none-any.whl
+        token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
