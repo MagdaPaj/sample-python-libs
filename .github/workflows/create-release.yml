@@ -25,10 +25,12 @@ jobs:
         pip install build
 
     - name: Build package
-      run: python -m build
+      run: |
+        python -m build
+        ln -s custom_exceptions_lib-${{ steps.get_version.outputs.VERSION }}-py3-none-any.whl dist/custom_exceptions_lib.whl
 
     - name: Release
       uses: softprops/action-gh-release@v2
       with:
-        files: dist/custom_exceptions_lib-0.0.3-py3-none-any.whl
+        files: dist/custom_exceptions_lib.whl
         token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
