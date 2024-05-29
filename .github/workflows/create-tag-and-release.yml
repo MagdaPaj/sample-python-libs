@@ -1,4 +1,4 @@
-name: Create Tag
+name: Build, tag and release
 
 on:
   push:
@@ -41,9 +41,14 @@ jobs:
           git push origin v$VERSION
 
       - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/custom_exceptions_lib-${{ env.VERSION }}-py3-none-any.whl
-          tag_name: v${{ env.VERSION }}
-          make_latest: true
+        run: |
+          gh release create v${{ env.VERSION }} \
+            --title "Release v${{ env.VERSION }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
+      - name: Upload Release Asset
+        run: |
+          gh release upload v${{ env.VERSION }} dist/custom_exceptions_lib-${{ env.VERSION }}-py3-none-any.whl
+        env:
+          GH_TOKEN: ${{ github.token }}
