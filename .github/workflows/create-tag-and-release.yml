@@ -6,7 +6,7 @@ on:
       - 'pyproject.toml'
 
 jobs:
-  create_tag:
+  build-tag-and-release:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,13 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: pip install toml
+        run: |
+          python -m pip install --upgrade pip
+          pip install build toml
+
+      - name: Build package
+        run: |
+          python -m build
 
       - name: Extract version
         id: get_version
@@ -27,11 +33,17 @@ jobs:
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - run: echo $VERSION
-
       - name: Create Tag
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git tag v$VERSION
           git push origin v$VERSION
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/custom_exceptions_lib-${{ env.VERSION }}-py3-none-any.whl
+          tag_name: v${{ env.VERSION }}
+          make_latest: true
+
