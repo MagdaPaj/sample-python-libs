@@ -27,7 +27,6 @@ jobs:
         python -m build
 
     - name: Extract version
-      id: get_version
       run: |
         VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
         echo "VERSION=$VERSION" >> $GITHUB_ENV
