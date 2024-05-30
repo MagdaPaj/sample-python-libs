@@ -2,6 +2,8 @@ name: Build, tag and release Python wheel
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'pyproject.toml'
 
