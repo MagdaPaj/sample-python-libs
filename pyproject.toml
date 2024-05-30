@@ -8,7 +8,7 @@ version = "0.0.7"
 authors = [
     {name = "Magda Baran"},
 ]
-description = "A sample package containing custom exceptions"
+description = "A sample package containing custom exceptions to be reused across Spark notebooks"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
