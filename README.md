@@ -48,7 +48,7 @@ An alternative option is to use `curl` with the GitHub API. For example:
 
 ## Tokens
 
-GitHub Actions provides a secret token, [GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication), which can be used for authentication. However, by default, this token does not have sufficient permissions to push a git tag or create a release. To overcome this, you need to specify `permissions` with the `contents: write` scope in your pipeline file. This approach was used in the [create-tag-and-release.yml](.github/workflows/create-tag-and-release.yml)
+GitHub Actions provides a secret token, [GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication), which can be used for authentication. However, by default, this token does not have sufficient permissions to push a git tag or create a release. To overcome this, you need to specify [permissions](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions) with the `contents: write` scope in your pipeline file. This approach was used in the [create-tag-and-release.yml](.github/workflows/create-tag-and-release.yml)
 
 Alternatively, you can create a Personal Access Token (PAT) with the `repo` scope and add it as a repository secret. This approach was used in the [create-release.yml](.github/workflows/create-release.yml) workflow. Remember to handle your PAT with care to ensure the security of your repository.
 
