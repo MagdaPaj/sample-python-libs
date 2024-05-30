@@ -7,6 +7,9 @@ on:
     paths:
       - 'pyproject.toml'
 
+permissions:
+  contents: write
+
 jobs:
   build-tag-and-release:
     runs-on: ubuntu-latest
