@@ -46,7 +46,7 @@ jobs:
           gh release create v${{ env.VERSION }} \
             --title "Release v${{ env.VERSION }}"
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # This is a another way of creating a release using curl, in case gh is not available
       # - name: Release
@@ -61,10 +61,10 @@ jobs:
       #       "name":"Release v${{ env.VERSION }}"
       #       }'
       #   env:
-      #     GH_TOKEN: ${{ github.token }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
         run: |
           gh release upload v${{ env.VERSION }} dist/custom_exceptions_lib-${{ env.VERSION }}-py3-none-any.whl
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
