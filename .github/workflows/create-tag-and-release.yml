@@ -46,8 +46,8 @@ jobs:
 
       - name: Release
         run: |
-          gh release create v${{ env.VERSION }} \
-            --title "Release v${{ env.VERSION }}"
+          gh release create v$VERSION \
+            --title "Release v$VERSION"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -68,6 +68,6 @@ jobs:
 
       - name: Upload Release Asset
         run: |
-          gh release upload v${{ env.VERSION }} dist/custom_exceptions_lib-${{ env.VERSION }}-py3-none-any.whl
+          gh release upload v$VERSION dist/custom_exceptions_lib-$VERSION-py3-none-any.whl
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
