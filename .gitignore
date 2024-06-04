@@ -27,3 +27,5 @@ docs/_build/
 *.bak
 *.tmp
 *.csv
+
+venv/
