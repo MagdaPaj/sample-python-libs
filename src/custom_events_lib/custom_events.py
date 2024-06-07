@@ -1,3 +1,4 @@
+import mssparkutils
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, MapType, TimestampType
 from pyspark.sql.functions import lit
 from pyspark.sql import DataFrame
@@ -22,7 +23,7 @@ context_schema = StructType([
     ])
 
 
-def write_with_schema(df: DataFrame, table_name: str) -> None:
+def _write_with_schema(df: DataFrame, table_name: str) -> None:
     merged_schema = StructType(event_schema.fields + context_schema.fields)
 
     if str(df.schema) != str(merged_schema):
@@ -31,8 +32,13 @@ def write_with_schema(df: DataFrame, table_name: str) -> None:
     df.write.format("delta").mode("append").saveAsTable(table_name)
 
 
-def decorate_with_context(df: DataFrame) -> DataFrame:
+def _decorate_with_context(df: DataFrame) -> DataFrame:
     return df.withColumn(NOTEBOOK_NAME, lit(mssparkutils.runtime.context['currentNotebookName']))\
                 .withColumn(ACTIVITY_ID, lit(mssparkutils.runtime.context['activityId']))\
                 .withColumn(IS_FOR_PIPELINE, lit(mssparkutils.runtime.context['isForPipeline']))\
                 .withColumn(USER_NAME, lit(mssparkutils.env.getUserName()))
+
+
+def save_custom_events(df: DataFrame, table_name: str) -> None:
+    decorated_df = _decorate_with_context1(df)
+    _write_with_schema1(decorated_df, table_name)
