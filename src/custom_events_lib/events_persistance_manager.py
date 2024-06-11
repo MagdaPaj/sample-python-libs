@@ -1,7 +1,8 @@
+from custom_events_lib.event_type import EventType
 from custom_events_lib.notebook_context import NotebookContext
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, MapType, TimestampType
-from pyspark.sql.functions import lit
-from pyspark.sql import DataFrame
+from pyspark.sql.functions import current_timestamp, lit, create_map, col
+from pyspark.sql import DataFrame, Row
 
 # Constants for schema field names
 NOTEBOOK_NAME = "notebook_name"
@@ -13,7 +14,7 @@ USER_NAME = "user_name"
 class EventsPersistenceManager:
     def __init__(self):
         self.event_schema = StructType([
-                StructField("event", StringType(), nullable=False),
+                StructField("event", EventType, nullable=False),
                 StructField("custom_properties", MapType(StringType(), StringType()), nullable=True),
                 StructField("timestamp", TimestampType(), nullable=False),
             ])
@@ -65,7 +66,50 @@ class EventsPersistenceManager:
 
         Parameters:
         - df (DataFrame): The DataFrame of custom events.
+        - notebook_context (NotebookContext): The notebook context.
         - table_name (str): The name of the Delta table to save events to.
         """
         decorated_df = EventsPersistenceManager._decorate_with_context(df, notebook_context)
         self._write_with_schema(decorated_df, table_name)
+
+    def save_missing_data_events(self, df: DataFrame, notebook_context: NotebookContext, table_name: str) -> None:
+        """
+        Saves missing data events to the specified table.
+
+        Parameters:
+        - df (DataFrame): The DataFrame containing the missing data identifiers.
+        - notebook_context (NotebookContext): The notebook context.
+        - table_name (str): The name of the Delta table to save the events to.
+
+        Returns:
+            None
+        """
+        columns = df.columns
+        map_expr = create_map(*[item for sublist in [[lit(col_name), col(col_name)] for col_name in columns] for item in sublist])
+
+        missing_data_events_df = df.select(map_expr.alias("custom_properties"))\
+            .withColumn("event", lit(EventType.MISSING_DATA))\
+            .withColumn("timestamp", current_timestamp())
+        self.save_events(missing_data_events_df, notebook_context, table_name)
+
+    def save_exception_event(self, exception: Exception, notebook_context: NotebookContext, table_name: str) -> None:
+        """
+        Saves an exception event to the specified table.
+
+        Parameters:
+        - exception (Exception): The exception object to be saved.
+        - notebook_context (NotebookContext): The context of the notebook where the exception occurred.
+        - table_name (str): The name of the Delta table to save the event to.
+
+        Returns:
+            None
+        """
+        exception_type = str(type(exception).__name__)
+        exception_message = str(exception)
+
+        exception_row = Row(custom_properties={"exception_type": exception_type, "exception_message": exception_message})
+
+        exception_event_df = spark.createDataFrame([exception_row])\
+            .withColumn("event", lit(EventType.EXCEPTION))\
+            .withColumn("timestamp", current_timestamp())
+        self.save_events(exception_event_df, notebook_context, table_name)
