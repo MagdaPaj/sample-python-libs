@@ -9,6 +9,7 @@ ACTIVITY_ID = "activity_id"
 IS_FOR_PIPELINE = "is_for_pipeline"
 USER_NAME = "user_name"
 
+
 class EventsPersistenceManager:
     def __init__(self):
         self.event_schema = StructType([
@@ -24,49 +25,47 @@ class EventsPersistenceManager:
                 StructField(USER_NAME, StringType(), nullable=False),
             ])
 
+    def _write_with_schema(self, df: DataFrame, table_name: str) -> None:
+        """
+        Writes a DataFrame to a Delta table with a specified schema.
 
-def _write_with_schema(self, df: DataFrame, table_name: str) -> None:
-    """
-    Writes a DataFrame to a Delta table with a specified schema.
+        Parameters:
+        - df (DataFrame): The DataFrame to write.
+        - table_name (str): The name of the Delta table.
 
-    Parameters:
-    - df (DataFrame): The DataFrame to write.
-    - table_name (str): The name of the Delta table.
+        Raises:
+        - ValueError: If the DataFrame schema does not match the expected schema.
+        """
+        merged_schema = StructType(self.event_schema.fields + self.context_schema.fields)
 
-    Raises:
-    - ValueError: If the DataFrame schema does not match the expected schema.
-    """
-    merged_schema = StructType(self.event_schema.fields + self.context_schema.fields)
+        if str(df.schema) != str(merged_schema):
+            raise ValueError(f"DataFrame schema doesn't match the expected table schema, got: {df.schema}, expected {merged_schema}")
 
-    if str(df.schema) != str(merged_schema):
-        raise ValueError(f"DataFrame schema doesn't match the expected table schema, got: {df.schema}, expected {merged_schema}")
+        df.write.format("delta").mode("append").saveAsTable(table_name)
 
-    df.write.format("delta").mode("append").saveAsTable(table_name)
+    @staticmethod
+    def _decorate_with_context(df: DataFrame, notebook_context: NotebookContext) -> DataFrame:
+        """
+        Decorates a DataFrame with additional context columns.
 
+        Parameters:
+        - df (DataFrame): The DataFrame to decorate.
 
-def _decorate_with_context(df: DataFrame, notebook_context: NotebookContext) -> DataFrame:
-    """
-    Decorates a DataFrame with additional context columns.
+        Returns:
+        - DataFrame: The decorated DataFrame.
+        """
+        return df.withColumn(NOTEBOOK_NAME, lit(notebook_context.notebook_name))\
+                    .withColumn(ACTIVITY_ID, lit(notebook_context.activity_id))\
+                    .withColumn(IS_FOR_PIPELINE, lit(notebook_context.is_for_pipeline))\
+                    .withColumn(USER_NAME, lit(notebook_context.user_name))
 
-    Parameters:
-    - df (DataFrame): The DataFrame to decorate.
+    def save_events(self, df: DataFrame, notebook_context: NotebookContext, table_name: str) -> None:
+        """
+        Saves events to a Delta table with context decoration.
 
-    Returns:
-    - DataFrame: The decorated DataFrame.
-    """
-    return df.withColumn(NOTEBOOK_NAME, lit(notebook_context.notebook_name))\
-                .withColumn(ACTIVITY_ID, lit(notebook_context.activity_id))\
-                .withColumn(IS_FOR_PIPELINE, lit(notebook_context.is_for_pipeline))\
-                .withColumn(USER_NAME, lit(notebook_context.user_name))
-
-
-def save_custom_events(self, df: DataFrame, notebook_context: NotebookContext, table_name: str) -> None:
-    """
-    Saves custom events to a Delta table with context decoration.
-
-    Parameters:
-    - df (DataFrame): The DataFrame of custom events.
-    - table_name (str): The name of the Delta table to save events to.
-    """
-    decorated_df = _decorate_with_context(df, notebook_context)
-    self._write_with_schema(decorated_df, table_name)
+        Parameters:
+        - df (DataFrame): The DataFrame of custom events.
+        - table_name (str): The name of the Delta table to save events to.
+        """
+        decorated_df = EventsPersistenceManager._decorate_with_context(df, notebook_context)
+        self._write_with_schema(decorated_df, table_name)
