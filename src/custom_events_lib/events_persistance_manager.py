@@ -14,7 +14,7 @@ USER_NAME = "user_name"
 class EventsPersistenceManager:
     def __init__(self):
         self.event_schema = StructType([
-                StructField("event", EventType, nullable=False),
+                StructField("event", StringType(), nullable=False),
                 StructField("custom_properties", MapType(StringType(), StringType()), nullable=True),
                 StructField("timestamp", TimestampType(), nullable=False),
             ])
@@ -88,7 +88,7 @@ class EventsPersistenceManager:
         map_expr = create_map(*[item for sublist in [[lit(col_name), col(col_name)] for col_name in columns] for item in sublist])
 
         missing_data_events_df = df.select(map_expr.alias("custom_properties"))\
-            .withColumn("event", lit(EventType.MISSING_DATA))\
+            .withColumn("event", lit(EventType.MISSING_DATA.value))\
             .withColumn("timestamp", current_timestamp())
         self.save_events(missing_data_events_df, notebook_context, table_name)
 
@@ -110,6 +110,6 @@ class EventsPersistenceManager:
         exception_row = Row(custom_properties={"exception_type": exception_type, "exception_message": exception_message})
 
         exception_event_df = spark.createDataFrame([exception_row])\
-            .withColumn("event", lit(EventType.EXCEPTION))\
+            .withColumn("event", lit(EventType.EXCEPTION.value))\
             .withColumn("timestamp", current_timestamp())
         self.save_events(exception_event_df, notebook_context, table_name)
