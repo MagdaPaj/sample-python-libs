@@ -39,5 +39,5 @@ def _decorate_with_context(df: DataFrame) -> DataFrame:
 
 
 def save_custom_events(df: DataFrame, table_name: str) -> None:
-    decorated_df = _decorate_with_context1(df)
-    _write_with_schema1(decorated_df, table_name)
+    decorated_df = _decorate_with_context(df)
+    _write_with_schema(decorated_df, table_name)
