@@ -1,4 +1,3 @@
-import mssparkutils
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, MapType, TimestampType
 from pyspark.sql.functions import lit
 from pyspark.sql import DataFrame
