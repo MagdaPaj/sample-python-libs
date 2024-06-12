@@ -2,7 +2,7 @@ from custom_events_lib.event_type import EventType
 from custom_events_lib.notebook_context import NotebookContext
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, MapType, TimestampType
 from pyspark.sql.functions import current_timestamp, lit, create_map, col
-from pyspark.sql import DataFrame, Row
+from pyspark.sql import DataFrame, Row, SparkSession
 
 # Constants for schema field names
 NOTEBOOK_NAME = "notebook_name"
@@ -72,7 +72,7 @@ class EventsPersistenceManager:
         decorated_df = EventsPersistenceManager._decorate_with_context(df, notebook_context)
         self._write_with_schema(decorated_df, table_name)
 
-    def save_missing_data_events(self, df: DataFrame, notebook_context: NotebookContext, table_name: str) -> None:
+    def save_missing_data_events(self, spark: SparkSession, df: DataFrame, notebook_context: NotebookContext, table_name: str) -> None:
         """
         Saves missing data events to the specified table.
 
@@ -90,9 +90,17 @@ class EventsPersistenceManager:
         missing_data_events_df = df.select(map_expr.alias("custom_properties"))\
             .withColumn("event", lit(EventType.MISSING_DATA.value))\
             .withColumn("timestamp", current_timestamp())
+
+        # reorder columns to match the schema
+        missing_data_events_df = missing_data_events_df.select(
+            "event",
+            "custom_properties",
+            "timestamp"
+        )
+        missing_data_events_df = spark.createDataFrame(missing_data_events_df.rdd, schema=self.event_schema)
         self.save_events(missing_data_events_df, notebook_context, table_name)
 
-    def save_exception_event(self, exception: Exception, notebook_context: NotebookContext, table_name: str) -> None:
+    def save_exception_event(self, spark: SparkSession, exception: Exception, notebook_context: NotebookContext, table_name: str) -> None:
         """
         Saves an exception event to the specified table.
 
