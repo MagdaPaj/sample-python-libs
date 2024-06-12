@@ -77,6 +77,7 @@ class EventsPersistenceManager:
         Saves missing data events to the specified table.
 
         Parameters:
+        - spark (SparkSession): The Spark session.
         - df (DataFrame): The DataFrame containing the missing data identifiers.
         - notebook_context (NotebookContext): The notebook context.
         - table_name (str): The name of the Delta table to save the events to.
@@ -105,6 +106,7 @@ class EventsPersistenceManager:
         Saves an exception event to the specified table.
 
         Parameters:
+        - spark (SparkSession): The Spark session.
         - exception (Exception): The exception object to be saved.
         - notebook_context (NotebookContext): The context of the notebook where the exception occurred.
         - table_name (str): The name of the Delta table to save the event to.
@@ -120,4 +122,13 @@ class EventsPersistenceManager:
         exception_event_df = spark.createDataFrame([exception_row])\
             .withColumn("event", lit(EventType.EXCEPTION.value))\
             .withColumn("timestamp", current_timestamp())
+
+        # reorder columns to match the schema
+        exception_event_df = exception_event_df.select(
+            "event",
+            "custom_properties",
+            "timestamp"
+        )
+        exception_event_df = spark.createDataFrame(exception_event_df.rdd, schema=self.event_schema)
+
         self.save_events(exception_event_df, notebook_context, table_name)
