@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "custom_python_libs"
-version = "0.0.33"
+version = "0.0.34"
 authors = [
     {name = "Magda Baran"},
 ]

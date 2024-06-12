@@ -7,6 +7,7 @@ from pyspark.sql import DataFrame, Row, SparkSession
 # Constants for schema field names
 NOTEBOOK_NAME = "notebook_name"
 ACTIVITY_ID = "activity_id"
+ACTIVITY_NAME = "activity_name"
 IS_FOR_PIPELINE = "is_for_pipeline"
 USER_NAME = "user_name"
 
@@ -22,6 +23,7 @@ class EventsPersistenceManager:
         self.context_schema = StructType([
                 StructField(NOTEBOOK_NAME, StringType(), nullable=False),
                 StructField(ACTIVITY_ID, StringType(), nullable=False),
+                StructField(ACTIVITY_NAME, StringType(), nullable=False),
                 StructField(IS_FOR_PIPELINE, BooleanType(), nullable=False),
                 StructField(USER_NAME, StringType(), nullable=False),
             ])
@@ -57,6 +59,7 @@ class EventsPersistenceManager:
         """
         return df.withColumn(NOTEBOOK_NAME, lit(notebook_context.notebook_name))\
                     .withColumn(ACTIVITY_ID, lit(notebook_context.activity_id))\
+                    .withColumn(ACTIVITY_NAME, lit(notebook_context.activity_name))\
                     .withColumn(IS_FOR_PIPELINE, lit(notebook_context.is_for_pipeline))\
                     .withColumn(USER_NAME, lit(notebook_context.user_name))
 
