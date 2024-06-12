@@ -1,5 +1,6 @@
 from custom_events_lib.event_type import EventType
 from custom_events_lib.notebook_context import NotebookContext
+from custom_exceptions_lib.exceptions import DeltaTableWriteException
 from pyspark.sql.types import StructType, StructField, StringType, BooleanType, MapType, TimestampType
 from pyspark.sql.functions import current_timestamp, lit, create_map, col
 from pyspark.sql import DataFrame, Row, SparkSession
@@ -44,7 +45,10 @@ class EventsPersistenceManager:
         if str(df.schema) != str(merged_schema):
             raise ValueError(f"DataFrame schema doesn't match the expected table schema, got: {df.schema}, expected {merged_schema}")
 
-        df.write.format("delta").mode("append").saveAsTable(table_name)
+        try:
+            df.write.format("delta").mode("append").saveAsTable(table_name)
+        except Exception as e:
+            raise DeltaTableWriteException(f"Failed to write DataFrame to Delta table {table_name}: {e}") from e
 
     @staticmethod
     def _decorate_with_context(df: DataFrame, notebook_context: NotebookContext) -> DataFrame:
