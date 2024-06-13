@@ -17,9 +17,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-[project.urls]
-Home = "https://github.com/MagdaPaj/sample-python-libs"
-
 dependencies = [
     "pyspark"
 ]
+
+[project.urls]
+Home = "https://github.com/MagdaPaj/sample-python-libs"
