@@ -20,3 +20,6 @@ classifiers = [
 [project.urls]
 Home = "https://github.com/MagdaPaj/sample-python-libs"
 
+dependencies = [
+    "pyspark"
+]
