@@ -130,9 +130,6 @@ class EventsPersistenceManager:
         - exception (Exception): The exception object to be saved.
         - context (Context): The context to decorate the event with.
         - table_name (str): The name of the Delta table to save the event to.
-
-        Raises:
-        - Exception: The original exception is re-raised after saving the exception event.
         """
         exception_type = str(type(exception).__name__)
         exception_message = str(exception)
@@ -145,6 +142,3 @@ class EventsPersistenceManager:
         exception_event_df = spark.createDataFrame(data, schema=self.event_schema)
 
         self.save_events(exception_event_df, context, table_name)
-
-        # raise original exception to be visible in the notebook
-        raise exception
