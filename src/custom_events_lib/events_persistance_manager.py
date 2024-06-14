@@ -42,6 +42,7 @@ class EventsPersistenceManager:
 
         Raises:
         - ValueError: If the DataFrame schema does not match the expected schema.
+        - DeltaTableWriteException: If the DataFrame cannot be written to the Delta table.
         """
 
         merged_schema = StructType(self.event_schema.fields + self.context_schema.fields)
@@ -65,6 +66,7 @@ class EventsPersistenceManager:
 
         Parameters:
         - df (DataFrame): The DataFrame to decorate.
+        - context (Context): The context to use for decoration.
 
         Returns:
         - DataFrame: The decorated DataFrame.
@@ -83,8 +85,11 @@ class EventsPersistenceManager:
 
         Parameters:
         - df (DataFrame): The DataFrame of custom events.
-        - context (Context): The context.
+        - context (Context): The context to decorate the events with.
         - table_name (str): The name of the Delta table to save events to.
+
+        Returns:
+            None
         """
         decorated_df = self._decorate_with_context(df, context)
         self._write_with_schema(decorated_df, table_name)
@@ -96,7 +101,7 @@ class EventsPersistenceManager:
         Parameters:
         - spark (SparkSession): The Spark session.
         - df (DataFrame): The DataFrame containing the missing data identifiers.
-        - context (Context): The notebook context.
+        - context (Context): The context to decorate the events with.
         - table_name (str): The name of the Delta table to save the events to.
 
         Returns:
@@ -123,11 +128,11 @@ class EventsPersistenceManager:
         Parameters:
         - spark (SparkSession): The Spark session.
         - exception (Exception): The exception object to be saved.
-        - context (Context): The context of the notebook where the exception occurred.
+        - context (Context): The context to decorate the event with.
         - table_name (str): The name of the Delta table to save the event to.
 
-        Returns:
-            None
+        Raises:
+        - Exception: The original exception is re-raised after saving the exception event.
         """
         exception_type = str(type(exception).__name__)
         exception_message = str(exception)
@@ -140,3 +145,6 @@ class EventsPersistenceManager:
         exception_event_df = spark.createDataFrame(data, schema=self.event_schema)
 
         self.save_events(exception_event_df, context, table_name)
+
+        # raise original exception to be visible in the notebook
+        raise exception
