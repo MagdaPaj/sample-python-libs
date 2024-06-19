@@ -60,7 +60,8 @@ class EventsPersistenceManager:
         except Exception as e:
             raise DeltaTableWriteException(f"Failed to write DataFrame to Delta table {table_name}: {e}") from e
 
-    def _decorate_with_context(self, df: DataFrame, context: Context) -> DataFrame:
+    @staticmethod
+    def _decorate_with_context(df: DataFrame, context: Context) -> DataFrame:
         """
         Decorates a DataFrame with additional context columns.
 
@@ -91,7 +92,7 @@ class EventsPersistenceManager:
         Returns:
             None
         """
-        decorated_df = self._decorate_with_context(df, context)
+        decorated_df = EventsPersistenceManager._decorate_with_context(df, context)
         self._write_with_schema(decorated_df, table_name)
 
     def save_missing_data_events(self, spark: SparkSession, df: DataFrame, context: Context, table_name: str) -> None:
